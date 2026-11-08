@@ -1,0 +1,34 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Extract ZIP file
+      run: unzip GeminiKeyboard.zip -d extract_folder
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Build Debug APK
+      run: |
+        # জিপ ফোল্ডারের ভেতর থেকে প্রজেক্ট খুঁজে বের করে বিল্ড করবে
+        cd $(dirname $(find extract_folder -name "gradlew" | head -n 1))
+        chmod +x gradlew
+        ./gradlew assembleDebug
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: GeminiKeyboard-APK
+        path: "**/*.apk"
