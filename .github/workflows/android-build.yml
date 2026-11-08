@@ -17,9 +17,27 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Build Debug APK
+    - name: Find and Build Project
       run: |
-        if [ -d "GeminiKeyboard" ]; then cd GeminiKeyboard; fi
+        # ১. যদি কোনো জিপ ফাইল থাকে, তাহলে আনজিপ করবে
+        if ls *.zip 1> /dev/null 2>&1; then
+          echo "ZIP file found! Extracting..."
+          unzip -q *.zip
+        fi
+
+        # ২. settings.gradle.kts ফাইলটি কোথায় আছে খুঁজবে
+        PROJECT_DIR=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1)
+        
+        if [ -z "$PROJECT_DIR" ]; then
+          echo "Error: Could not find settings.gradle.kts anywhere!"
+          exit 1
+        fi
+        
+        # ৩. প্রজেক্টের সঠিক ফোল্ডারে যাবে
+        cd "$(dirname "$PROJECT_DIR")"
+        echo "Building project in: $(pwd)"
+        
+        # ৪. বিল্ড করবে
         gradle assembleDebug
 
     - name: Upload APK
